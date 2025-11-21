@@ -41,6 +41,10 @@ tmp/
 temp/
 .cache/
 
+# Build scripts (optional - you can commit these)
+# build-and-push.sh
+# build-and-push.ps1
+
 # Prisma
 prisma/migrations/
 
