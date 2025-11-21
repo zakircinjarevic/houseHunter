@@ -21,7 +21,7 @@ if (telegramBotToken) {
 }
 
 export const config = {
-  port: parseInt(process.env.PORT || '8080', 10), // Cloud Run uses 8080 by default
+  port: parseInt(process.env.PORT || '3001', 10), // Railway sets PORT automatically
   databaseUrl: process.env.DATABASE_URL || 'file:./data/dev.db',
   olxApiBaseUrl: process.env.OLX_API_BASE_URL || 'https://api.olx.ba',
   olxClientId: process.env.OLX_CLIENT_ID || '',

@@ -25,10 +25,9 @@ RUN npm run build
 # Create data directory for SQLite
 RUN mkdir -p /app/data
 
-# Expose port (Cloud Run uses PORT env var, default to 8080)
-EXPOSE 8080
+# Expose port (Railway sets PORT automatically)
+EXPOSE $PORT
 
 # Start the application
-# Cloud Run sets PORT automatically, but we default to 8080
-CMD ["sh", "-c", "PORT=${PORT:-8080} npm start"]
+CMD ["npm", "start"]
 

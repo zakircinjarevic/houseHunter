@@ -6,6 +6,8 @@ Deploy directly from GitHub without installing any CLI tools! 🚀
 
 Railway can deploy directly from GitHub with zero configuration.
 
+**See [RAILWAY-SETUP.md](./RAILWAY-SETUP.md) for detailed Railway setup instructions.**
+
 ### Step 1: Push to GitHub
 
 1. **Create a GitHub repository** (if you haven't already):
