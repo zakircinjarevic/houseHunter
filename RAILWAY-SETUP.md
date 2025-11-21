@@ -9,8 +9,12 @@
 3. Choose your `houseHunter` repository
 4. Click **"Add Service"** → **"GitHub Repo"**
 5. Select your repo again
-6. **Important**: Set **Root Directory** to: `backend`
-7. Railway will detect the Dockerfile automatically
+6. **CRITICAL**: In the service settings:
+   - Go to **Settings** tab
+   - Find **"Root Directory"** section
+   - Set it to: `backend`
+   - Railway will now look for `backend/Dockerfile`
+7. Railway will detect the Dockerfile automatically once Root Directory is set
 
 ### 2. Configure Backend Environment Variables
 
@@ -41,7 +45,11 @@ Copy this URL - you'll need it for the frontend!
 
 1. In the same Railway project, click **"Add Service"** again
 2. Select **"GitHub Repo"** → your repo
-3. **Important**: Set **Root Directory** to: `frontend`
+3. **CRITICAL**: In the service settings:
+   - Go to **Settings** tab
+   - Find **"Root Directory"** section
+   - Set it to: `frontend`
+   - Railway will now look for `frontend/Dockerfile`
 4. Go to **Variables** tab
 5. Add:
    ```
@@ -62,12 +70,27 @@ Copy this URL - you'll need it for the frontend!
 
 ## Troubleshooting
 
-### "Error creating build plan with Railpack"
+### "Error creating build plan with Railpack" or "Dockerfile doesn't exist"
 
-This means Railway is trying to auto-detect instead of using Docker. Solution:
-- Make sure **Root Directory** is set correctly (`backend` or `frontend`)
-- The `railway.json` files tell Railway to use Docker
-- If still failing, in Railway service settings, make sure "Docker" is selected as the build method
+This means Railway is looking in the wrong directory. Solution:
+1. **Go to your service Settings** in Railway
+2. **Find "Root Directory"** field
+3. **Set it to:**
+   - `backend` for backend service
+   - `frontend` for frontend service
+4. **Save** and Railway will redeploy
+5. The `railway.json` files help, but Root Directory is the key setting!
+
+**Visual Guide:**
+```
+Your Repo Root/
+├── backend/
+│   ├── Dockerfile  ← Railway finds this when Root Directory = "backend"
+│   └── railway.json
+└── frontend/
+    ├── Dockerfile  ← Railway finds this when Root Directory = "frontend"
+    └── railway.json
+```
 
 ### Build fails
 
