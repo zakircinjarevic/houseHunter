@@ -12,7 +12,7 @@ if (result.error) {
 }
 
 // Hardcoded Telegram bot token
-const telegramBotToken = '8335221531:AAHrTdAgMRM-DFajGl2b6wYemi-PNRde6DI';
+const telegramBotToken = 'TELEGRAM_BOT_TOKEN';
 
 // Log token status (without exposing the full token)
 console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken.substring(0, 10)}...`);
