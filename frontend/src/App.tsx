@@ -1,10 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ListingsPage from './pages/ListingsPage';
 import FiltersPage from './pages/FiltersPage';
 import StatusPage from './pages/StatusPage';
 import LoginPage from './pages/LoginPage';
-import AdminLoginPage from './pages/AdminLoginPage';
+// Login removed - no login page needed
 import TestOLXPage from './pages/TestOLXPage';
 import TelegramPage from './pages/TelegramPage';
 import LogsPage from './pages/LogsPage';
@@ -14,7 +14,6 @@ import { adminApi } from './api/admin';
 function NavBar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
@@ -35,7 +34,7 @@ function NavBar() {
       await adminApi.logout();
       setIsAuthenticated(false);
       setUsername(null);
-      navigate('/admin/login');
+      // Login removed - no redirect needed
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -107,7 +106,7 @@ function NavBar() {
               </div>
             ) : (
               <Link
-                to="/admin/login"
+                to="/"
                 className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700"
               >
                 Admin Login
@@ -127,7 +126,7 @@ function App() {
         <NavBar />
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <Routes>
-            <Route path="/admin/login" element={<AdminLoginPage />} />
+            {/* Login removed - no login route needed */}
             <Route path="/" element={<ProtectedRoute><ListingsPage /></ProtectedRoute>} />
             <Route path="/filters" element={<ProtectedRoute><FiltersPage /></ProtectedRoute>} />
             <Route path="/status" element={<ProtectedRoute><StatusPage /></ProtectedRoute>} />

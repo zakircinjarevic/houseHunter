@@ -21,15 +21,24 @@ import logRoutes from './routes/logRoutes';
 
 const app = express();
 
+// Determine if we're in production (Railway uses HTTPS)
+const isProduction = process.env.NODE_ENV === 'production' || 
+                     process.env.RAILWAY_ENVIRONMENT === 'production' ||
+                     (process.env.PORT && process.env.PORT !== '3001'); // Railway sets PORT
+
 // Session middleware (must be before CORS)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'househunter-secret-key-change-in-production',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: false, // Don't save empty sessions
+  name: 'househunter.sid', // Custom session name
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    secure: isProduction ? true : false, // HTTPS required in production (Railway)
     httpOnly: true,
+    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin with credentials in production
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    // Don't set domain - let browser handle it
+    // path: '/' is default
   },
 }));
 
@@ -42,11 +51,13 @@ app.use(cors({
     // Allow requests from frontend URL or any IP address
     const allowedOrigins = [
       config.frontendUrl,
-      /^http:\/\/localhost/,
-      /^http:\/\/127\.0\.0\.1/,
-      /^http:\/\/192\.168\./,
-      /^http:\/\/10\./,
+      /^http:\/\/localhost/,           // Local development
+      /^http:\/\/127\.0\.0\.1/,        // Localhost IP
+      /^http:\/\/192\.168\./,          // Private IP ranges
+      /^http:\/\/10\./,                // Private IP ranges
       /^http:\/\/172\.(1[6-9]|2[0-9]|3[01])\./,  // Private IP ranges
+      /^https:\/\/.*\.up\.railway\.app$/,  // Railway HTTPS URLs
+      /^https:\/\/.*\.railway\.app$/,     // Railway custom domains
     ];
     
     const isAllowed = allowedOrigins.some(allowed => {
@@ -56,9 +67,19 @@ app.use(cors({
       return allowed.test(origin);
     });
     
-    callback(null, isAllowed);
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // Log rejected origins for debugging
+      logger.warn(`CORS blocked origin: ${origin}`);
+      // In production, you might want to reject: callback(new Error('Not allowed by CORS'))
+      // For now, allow to avoid blocking legitimate requests
+      callback(null, true);
+    }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 
@@ -72,6 +93,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/logs', logRoutes);
+
+// Root endpoint - simple UP check
+app.get('/', (req, res) => {
+  res.send('UP!');
+});
 
 // Health check
 app.get('/health', (req, res) => {

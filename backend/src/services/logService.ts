@@ -16,6 +16,12 @@ export interface LogEntry {
       price?: number;
     }>;
     error?: string;
+    newCount?: number;
+    updatedCount?: number;
+    page?: number;
+    type?: string;
+    priceChanges?: number;
+    alreadyExisted?: number;
   };
 }
 

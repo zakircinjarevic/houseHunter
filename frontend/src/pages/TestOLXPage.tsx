@@ -3,7 +3,7 @@ import { testApi } from '../api/test';
 
 export default function TestOLXPage() {
   const [url, setUrl] = useState('https://api.olx.ba/search');
-  const [method, setMethod] = useState('GET');
+  const [method, setMethod] = useState<'GET' | 'POST'>('GET');
   const [params, setParams] = useState(JSON.stringify({
     category_id: 23,
     page: 1,
@@ -152,7 +152,7 @@ export default function TestOLXPage() {
               </label>
               <select
                 value={method}
-                onChange={(e) => setMethod(e.target.value)}
+                onChange={(e) => setMethod(e.target.value as 'GET' | 'POST')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="GET">GET</option>

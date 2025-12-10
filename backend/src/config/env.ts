@@ -11,14 +11,11 @@ if (result.error) {
   console.log(`[CONFIG] Loaded .env file from ${envPath}`);
 }
 
-const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
+// Hardcoded Telegram bot token
+const telegramBotToken = '8335221531:AAHrTdAgMRM-DFajGl2b6wYemi-PNRde6DI';
 
 // Log token status (without exposing the full token)
-if (telegramBotToken) {
-  console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken.substring(0, 10)}...`);
-} else {
-  console.warn('[CONFIG] TELEGRAM_BOT_TOKEN not found in environment variables');
-}
+console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken.substring(0, 10)}...`);
 
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10), // Railway sets PORT automatically

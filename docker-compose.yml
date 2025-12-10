@@ -8,15 +8,13 @@ services:
     container_name: househunter-backend
     ports:
       - "3001:3001"
+    env_file:
+      - backend/.env
     environment:
       - NODE_ENV=production
       - DATABASE_URL=file:./data/dev.db
       - PORT=3001
       - FRONTEND_URL=http://localhost
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - OLX_CLIENT_ID=${OLX_CLIENT_ID}
-      - OLX_CLIENT_SECRET=${OLX_CLIENT_SECRET}
-      - OLX_ACCESS_TOKEN=${OLX_ACCESS_TOKEN}
     volumes:
       - ./backend/data:/app/data
     restart: unless-stopped

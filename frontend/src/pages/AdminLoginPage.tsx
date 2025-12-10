@@ -29,13 +29,27 @@ export default function AdminLoginPage() {
       const response = await adminApi.login(username, password);
       
       if (response.success) {
-        navigate('/');
+        // Wait a moment for session cookie to be set, then verify and navigate
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        try {
+          const checkResponse = await adminApi.check();
+          if (checkResponse.authenticated) {
+            navigate('/');
+          } else {
+            setError('Login successful but session not detected. Please try again.');
+            setLoading(false);
+          }
+        } catch {
+          // If check fails, try navigating anyway
+          navigate('/');
+        }
       } else {
         setError('Login failed');
+        setLoading(false);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   };

@@ -10,7 +10,12 @@ export class TelegramService {
   private apiUrl: string;
 
   constructor() {
-    this.botToken = config.telegramBotToken;
+    this.botToken = config.telegramBotToken || '';
+    if (!this.botToken || this.botToken.trim() === '') {
+      logger.warn('[TelegramService] TELEGRAM_BOT_TOKEN is not configured. Telegram features will be disabled.');
+    } else {
+      logger.info(`[TelegramService] Bot token loaded: ${this.botToken.substring(0, 10)}...`);
+    }
     this.apiUrl = `https://api.telegram.org/bot${this.botToken}`;
   }
 

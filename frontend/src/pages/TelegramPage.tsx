@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
+
 interface User {
   id: number;
   telegramId: string;
@@ -22,7 +24,7 @@ export default function TelegramPage() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/users');
+      const response = await axios.get(`${API_BASE}/users`);
       setUsers(response.data);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -34,7 +36,7 @@ export default function TelegramPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/users/register', registerData);
+      await axios.post(`${API_BASE}/users/register`, registerData);
       setShowRegisterForm(false);
       setRegisterData({ telegramId: '', username: '' });
       loadUsers();
