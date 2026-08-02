@@ -18,8 +18,7 @@ export class SyncService {
    * Runs every 2 minutes
    */
   async initialBackfill(): Promise<void> {
-    // Fetch both apartments and houses
-    await this.backfillType('apartment');
+    // Fetch houses only (Kanton Sarajevo: Ilidža, Novi Grad, Novo Sarajevo, 150k-250k)
     await this.backfillType('house');
     this.lastBackfillTime = new Date();
   }
@@ -113,8 +112,7 @@ export class SyncService {
    * Runs frequently for real-time notifications
    */
   async checkForNewListings(): Promise<void> {
-    // Check both apartments and houses
-    await this.checkTypeForNewListings('apartment');
+    // Check houses only (Kanton Sarajevo: Ilidža, Novi Grad, Novo Sarajevo, 150k-250k)
     await this.checkTypeForNewListings('house');
   }
 

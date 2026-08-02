@@ -68,31 +68,31 @@ export class OLXService {
       
       // Configure filters based on type
       let categoryId: number;
-      let attr: string;
-      
+
       if (type === 'apartment') {
         categoryId = 23; // Apartments/Stanovi i apartmani
-        // Fixed filters: 60-100 sqm, 3 rooms (Trosoban), apartment (Stan), Kanton Sarajevo, price 100k-250k
-        attr = '3130322836302d313030293a3130372854726f736f62616e20283329293a37343032285374616e29';
       } else {
         categoryId = 24; // Houses/Kuće
-        // House filters: 61-100 sqm, Kanton Sarajevo, price 100k-250k
-        attr = '37322836312d31303029';
       }
-      
+
       const params: any = {
         category_id: categoryId,
         page: page + 1, // OLX API uses 1-based pagination
         per_page: limit, // OLX uses per_page, not limit
-        attr,
-        attr_encoded: '1',
         canton: 9, // Kanton Sarajevo
-        cities: '',
-        price_from: 100000, // Minimum price: 100,000 KM
-        price_to: 250000, // Maximum price: 250,000 KM
+        // Opcine: Ilidža (80), Novi Grad (132), Novo Sarajevo (131)
+        cities: type === 'house' ? '80,132,131' : '',
+        price_from: type === 'house' ? 150000 : 100000,
+        price_to: 250000,
         sort_by: 'date', // Sort by date
         sort_order: 'desc', // Newest first
       };
+
+      if (type === 'apartment') {
+        // 60-100 sqm, 3 rooms (Trosoban), apartment (Stan)
+        params.attr = '3130322836302d313030293a3130372854726f736f62616e20283329293a37343032285374616e29';
+        params.attr_encoded = '1';
+      }
 
       logger.info(`Fetching OLX ${type} listings: page=${page + 1}, per_page=${limit}`);
 
