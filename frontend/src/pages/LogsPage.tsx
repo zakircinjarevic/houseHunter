@@ -11,7 +11,7 @@ function LogsPage() {
       setLoading(true);
       setError(null);
       const response = await getLogs(200);
-      setLogs(response.logs);
+      setLogs(response.logs || []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch logs');
     } finally {

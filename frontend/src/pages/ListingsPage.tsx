@@ -16,8 +16,8 @@ export default function ListingsPage() {
     setLoading(true);
     try {
       const response = await listingsApi.getAll(page, limit);
-      setListings(response.listings);
-      setTotal(response.total);
+      setListings(response.listings || []);
+      setTotal(response.total || 0);
     } catch (error) {
       console.error('Error loading listings:', error);
     } finally {
