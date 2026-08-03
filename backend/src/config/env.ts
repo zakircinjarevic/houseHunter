@@ -11,11 +11,9 @@ if (result.error) {
   console.log(`[CONFIG] Loaded .env file from ${envPath}`);
 }
 
-// Hardcoded Telegram bot token
-const telegramBotToken = 'TELEGRAM_BOT_TOKEN';
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 
-// Log token status (without exposing the full token)
-console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken.substring(0, 10)}...`);
+console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken ? telegramBotToken.substring(0, 10) + '...' : 'NOT SET'}`);
 
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10), // Railway sets PORT automatically
