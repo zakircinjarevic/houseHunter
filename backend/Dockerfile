@@ -31,5 +31,5 @@ RUN mkdir -p /app/data
 EXPOSE $PORT
 
 # Start script that runs migrations then starts the app
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm start"]
 

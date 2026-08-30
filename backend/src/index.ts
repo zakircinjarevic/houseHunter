@@ -5,8 +5,11 @@ import { config } from './config/env';
 import { logger } from './utils/logger';
 import { startBackfillJob } from './cron/backfillJob';
 import { startNewListingJob } from './cron/newListingJob';
+import { startCarBackfillJob } from './cron/carBackfillJob';
+import { startCarNewListingJob } from './cron/carNewListingJob';
 import { syncService } from './services/syncService';
 import { telegramPollingService } from './services/telegramPollingService';
+import { carTelegramPollingService } from './services/carTelegramPollingService';
 
 // Routes
 import listingsRoutes from './routes/listingsRoutes';
@@ -18,6 +21,7 @@ import adminRoutes from './routes/adminRoutes';
 import testRoutes from './routes/testRoutes';
 import telegramRoutes from './routes/telegramRoutes';
 import logRoutes from './routes/logRoutes';
+import carListingsRoutes from './routes/carListingsRoutes';
 
 const app = express();
 
@@ -93,6 +97,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/car-listings', carListingsRoutes);
 
 // Root endpoint - simple UP check
 app.get('/', (req, res) => {
@@ -109,18 +114,18 @@ app.listen(config.port, () => {
   logger.info(`Server running on port ${config.port}`);
   logger.info(`Frontend URL: ${config.frontendUrl}`);
 
-  // Start cron jobs
+  // Start house cron jobs
   startBackfillJob(); // Database seeding (every 2 minutes)
   startNewListingJob(); // Real-time notifications (every 1 minute)
-  
-  // Enable real-time notifications from this point forward
   syncService.enableRealTimeNotifications();
-  
-  // Start Telegram polling to handle /start command
   telegramPollingService.startPolling();
-  
-  logger.info('Cron jobs ENABLED - using fixed filters: 60-100 sqm, 3 rooms, apartment, Kanton Sarajevo, price 100k-250k KM');
-  logger.info('Real-time notifications ENABLED - checking for new listings every 1 minute');
-  logger.info('Telegram polling ENABLED - listening for /start command to auto-register users');
+
+  // Start car cron jobs
+  startCarBackfillJob(); // Car database seeding (every 2 minutes)
+  startCarNewListingJob(); // Car new listing check (every 1 minute)
+  carTelegramPollingService.startPolling();
+
+  logger.info('House cron jobs ENABLED - checking every 1 minute');
+  logger.info('Car cron jobs ENABLED - checking every 1 minute, notifications activate on first /start');
 });
 

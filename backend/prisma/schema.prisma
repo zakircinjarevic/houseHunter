@@ -44,4 +44,27 @@ model UserFilter {
   createdAt DateTime @default(now())
 }
 
+model CarListing {
+  id                  String    @id
+  title               String
+  description         String?
+  price               Float
+  url                 String
+  location            String?
+  images              String
+  mileage             Int?
+  year                Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  lastSeen            DateTime  @default(now())
+  notifiedAt          DateTime?
+  priceAtNotification Float?
+}
+
+model CarBotUser {
+  id         Int      @id @default(autoincrement())
+  telegramId String   @unique
+  username   String?
+  createdAt  DateTime @default(now())
+}
 

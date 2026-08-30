@@ -8,13 +8,13 @@ import { logger } from '../utils/logger';
  * Database seeding continues in background (every 2 minutes via backfill)
  */
 export function startNewListingJob() {
-  logger.info('Starting real-time listing check cron job (runs every 30 seconds)');
+  logger.info('Starting real-time listing check cron job (runs every 1 minute)');
 
   // Run immediately on startup
   syncService.checkForNewListings();
 
-  // Run every 30 seconds for real-time notifications
-  cron.schedule('*/30 * * * * *', async () => {
+  // Run every 1 minute for real-time notifications
+  cron.schedule('*/1 * * * *', async () => {
     await syncService.checkForNewListings();
   });
 }

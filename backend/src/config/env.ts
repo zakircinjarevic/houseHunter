@@ -12,8 +12,10 @@ if (result.error) {
 }
 
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
+const carTelegramBotToken = process.env.CAR_TELEGRAM_BOT_TOKEN || '';
 
 console.log(`[CONFIG] Telegram Bot Token loaded: ${telegramBotToken ? telegramBotToken.substring(0, 10) + '...' : 'NOT SET'}`);
+console.log(`[CONFIG] Car Telegram Bot Token loaded: ${carTelegramBotToken ? carTelegramBotToken.substring(0, 10) + '...' : 'NOT SET'}`);
 
 export const config = {
   port: parseInt(process.env.PORT || '3001', 10), // Railway sets PORT automatically
@@ -23,6 +25,7 @@ export const config = {
   olxClientSecret: process.env.OLX_CLIENT_SECRET || '',
   olxAccessToken: process.env.OLX_ACCESS_TOKEN || '',
   telegramBotToken: telegramBotToken,
+  carTelegramBotToken: carTelegramBotToken,
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 };
 
