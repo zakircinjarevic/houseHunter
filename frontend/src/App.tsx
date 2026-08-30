@@ -10,6 +10,7 @@ import TelegramPage from './pages/TelegramPage';
 import LogsPage from './pages/LogsPage';
 import CarsPage from './pages/CarsPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import { adminApi } from './api/admin';
 
 function NavBar() {
@@ -132,17 +133,19 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <NavBar />
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <Routes>
-            {/* Login removed - no login route needed */}
-            <Route path="/" element={<ProtectedRoute><ListingsPage /></ProtectedRoute>} />
-            <Route path="/filters" element={<ProtectedRoute><FiltersPage /></ProtectedRoute>} />
-            <Route path="/status" element={<ProtectedRoute><StatusPage /></ProtectedRoute>} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/test" element={<ProtectedRoute><TestOLXPage /></ProtectedRoute>} />
-            <Route path="/telegram" element={<ProtectedRoute><TelegramPage /></ProtectedRoute>} />
-            <Route path="/logs" element={<ProtectedRoute><LogsPage /></ProtectedRoute>} />
-            <Route path="/cars" element={<ProtectedRoute><CarsPage /></ProtectedRoute>} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              {/* Login removed - no login route needed */}
+              <Route path="/" element={<ProtectedRoute><ErrorBoundary><ListingsPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/filters" element={<ProtectedRoute><ErrorBoundary><FiltersPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/status" element={<ProtectedRoute><ErrorBoundary><StatusPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/test" element={<ProtectedRoute><ErrorBoundary><TestOLXPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/telegram" element={<ProtectedRoute><ErrorBoundary><TelegramPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/logs" element={<ProtectedRoute><ErrorBoundary><LogsPage /></ErrorBoundary></ProtectedRoute>} />
+              <Route path="/cars" element={<ProtectedRoute><ErrorBoundary><CarsPage /></ErrorBoundary></ProtectedRoute>} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </div>
     </Router>
