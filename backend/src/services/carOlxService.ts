@@ -57,6 +57,7 @@ export class CarOLXService {
       const params: any = {
         category_id: 18, // Automobili
         state: 2,        // Polovan (used)
+        price_from: 5000,
         page: page + 1,
         per_page: limit,
         sort_by: 'date',
