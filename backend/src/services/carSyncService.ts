@@ -2,7 +2,7 @@ import { carOlxService, CarOLXListing } from './carOlxService';
 import { logger } from '../utils/logger';
 import prisma from '../db/prisma';
 
-const MILEAGE_THRESHOLD = 5000;
+const MIN_PRICE = 5000;
 
 export class CarSyncService {
   private carOffset: number = 0;
@@ -11,9 +11,7 @@ export class CarSyncService {
   private notificationEnabled: boolean = false;
 
   private shouldNotify(listing: CarOLXListing): boolean {
-    // Notify for all listings where mileage is unknown OR mileage > threshold
-    if (listing.mileage === undefined || listing.mileage === null) return true;
-    return listing.mileage > MILEAGE_THRESHOLD;
+    return listing.price > MIN_PRICE;
   }
 
   async initialCarBackfill(): Promise<void> {

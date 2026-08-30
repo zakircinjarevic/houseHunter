@@ -133,7 +133,7 @@ export class CarTelegramService {
 
         await this.sendMessage(
           chatId,
-          `Zdravo ${firstName}! 🚗\n\nUspješno si prijavljen/a.\nDobijat ćeš obavijesti za svaki novi oglas automobila (koristeni, kilometraža > ${5000} km).`
+          `Zdravo ${firstName}! 🚗\n\nUspješno si prijavljen/a.\nDobijat ćeš obavijesti za svaki novi oglas korištenog automobila sa cijenom iznad 5.000 KM.`
         );
         logger.info(`[CarBot] Registered new user: ${chatId} (${firstName})`);
       } catch (error: any) {
