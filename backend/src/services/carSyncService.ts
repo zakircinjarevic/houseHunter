@@ -1,5 +1,6 @@
 import { carOlxService, CarOLXListing } from './carOlxService';
 import { logger } from '../utils/logger';
+import { logService } from './logService';
 import prisma from '../db/prisma';
 
 const MIN_PRICE = 5000;
@@ -47,6 +48,18 @@ export class CarSyncService {
 
       this.lastCarBackfillTime = new Date();
       logger.info(`[Cars] Backfill complete: ${newCount} new, ${response.data.length - newCount} updated, page ${page + 1}`);
+
+      if (newCount > 0) {
+        const totalInDb = await prisma.carListing.count();
+        logService.addLog('fetch', `[Cars] ${newCount} new cars added from page ${page + 1} - total in db: ${totalInDb}`, {
+          fetchedCount: response.data.length,
+          newCount,
+          updatedCount: response.data.length - newCount,
+          totalInDb,
+          page: page + 1,
+          type: 'car',
+        });
+      }
     } catch (error: any) {
       logger.error('[Cars] Error in backfill:', error.message);
     }
@@ -83,8 +96,23 @@ export class CarSyncService {
       this.lastCarCheckTime = new Date();
       logger.info(`[Cars] Check done: ${response.data.length} checked, ${toNotify.length} to notify`);
 
+      const totalInDb = await prisma.carListing.count();
+      const alreadyExisted = response.data.length - toNotify.length;
+      logService.addLog('fetch', `[Cars] ${response.data.length} cars checked - ${toNotify.length} new, ${alreadyExisted} already in db - total: ${totalInDb}`, {
+        fetchedCount: response.data.length,
+        newCount: toNotify.length,
+        alreadyExisted,
+        totalInDb,
+        type: 'car',
+      });
+
       if (this.notificationEnabled && toNotify.length > 0) {
-        // Import here to avoid circular deps at module load time
+        const users = await prisma.carBotUser.count();
+        logService.addLog('notification', `[Cars] ${users} users alerted with ${toNotify.length} new car listings`, {
+          alertedUsers: users,
+          newCount: toNotify.length,
+          type: 'car',
+        });
         const { carTelegramService } = await import('./carTelegramService');
         for (const listing of toNotify) {
           await carTelegramService.sendCarAlert(listing);

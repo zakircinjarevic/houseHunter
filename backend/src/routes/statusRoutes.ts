@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { syncService } from '../services/syncService';
+import { carSyncService } from '../services/carSyncService';
 import prisma from '../db/prisma';
 import { logger } from '../utils/logger';
 
@@ -12,19 +13,25 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const syncStatus = syncService.getStatus();
-    
-    const [totalListings, totalUsers, totalFilters] = await Promise.all([
+    const carStatus = carSyncService.getCarStatus();
+
+    const [totalListings, totalUsers, totalFilters, totalCarListings, totalCarBotUsers] = await Promise.all([
       prisma.listing.count(),
       prisma.user.count(),
       prisma.userFilter.count(),
+      prisma.carListing.count(),
+      prisma.carBotUser.count(),
     ]);
 
     res.json({
       sync: syncStatus,
+      carSync: carStatus,
       stats: {
         totalListings,
         totalUsers,
         totalFilters,
+        totalCarListings,
+        totalCarBotUsers,
       },
       timestamp: new Date().toISOString(),
     });

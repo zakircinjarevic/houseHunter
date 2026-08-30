@@ -11,12 +11,22 @@ export interface SyncStatus {
   realTimeNotificationsEnabled: boolean;
 }
 
+export interface CarSyncStatus {
+  carOffset: number;
+  lastCarBackfillTime: string | null;
+  lastCarCheckTime: string | null;
+  notificationEnabled: boolean;
+}
+
 export interface StatusResponse {
   sync: SyncStatus;
+  carSync: CarSyncStatus;
   stats: {
     totalListings: number;
     totalUsers: number;
     totalFilters: number;
+    totalCarListings: number;
+    totalCarBotUsers: number;
   };
   timestamp: string;
 }

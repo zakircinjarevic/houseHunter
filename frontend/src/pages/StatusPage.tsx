@@ -87,13 +87,13 @@ export default function StatusPage() {
             <h3 className="text-xl font-semibold mb-4 text-gray-900">Statistics</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Total Listings</p>
+                <p className="text-sm text-gray-600">House Listings</p>
                 <p className="text-2xl font-bold text-green-600">
                   {status.stats.totalListings.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Users</p>
+                <p className="text-sm text-gray-600">House Bot Users</p>
                 <p className="text-2xl font-bold text-purple-600">
                   {status.stats.totalUsers.toLocaleString()}
                 </p>
@@ -104,8 +104,52 @@ export default function StatusPage() {
                   {status.stats.totalFilters.toLocaleString()}
                 </p>
               </div>
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-sm text-gray-600">Car Listings</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {(status.stats.totalCarListings ?? 0).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Car Bot Users</p>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {(status.stats.totalCarBotUsers ?? 0).toLocaleString()}
+                </p>
+              </div>
             </div>
           </div>
+
+          {status.carSync && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-semibold mb-4 text-gray-900">🚗 Car Sync Status</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600">Car Offset</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {(status.carSync.carOffset ?? 0).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Last Car Backfill</p>
+                  <p className="text-lg text-gray-900">{formatDate(status.carSync.lastCarBackfillTime)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Last Car Check</p>
+                  <p className="text-lg text-gray-900">{formatDate(status.carSync.lastCarCheckTime)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Car Notifications</p>
+                  <p className="text-lg font-semibold">
+                    {status.carSync.notificationEnabled ? (
+                      <span className="text-green-600">Enabled</span>
+                    ) : (
+                      <span className="text-yellow-600">Waiting for first /start</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-lg shadow-md p-6 md:col-span-2">
             <h3 className="text-xl font-semibold mb-4 text-gray-900">Job Schedule</h3>

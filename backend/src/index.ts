@@ -22,6 +22,7 @@ import testRoutes from './routes/testRoutes';
 import telegramRoutes from './routes/telegramRoutes';
 import logRoutes from './routes/logRoutes';
 import carListingsRoutes from './routes/carListingsRoutes';
+import carUsersRoutes from './routes/carUsersRoutes';
 
 const app = express();
 
@@ -98,6 +99,7 @@ app.use('/api/test', testRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/car-listings', carListingsRoutes);
+app.use('/api/car-users', carUsersRoutes);
 
 // Root endpoint - simple UP check
 app.get('/', (req, res) => {
