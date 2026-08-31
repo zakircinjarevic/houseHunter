@@ -12,11 +12,11 @@ export interface CarOLXListing {
   images?: string[];
   mileage?: number;
   year?: number;
-  viewCount?: number;
   fuelType?: string;
-  engineSize?: string;
   transmission?: string;
-  power?: string;
+  engineSize?: number;
+  power?: number;
+  viewCount?: number;
 }
 
 export interface CarOLXApiResponse {
@@ -28,33 +28,11 @@ export interface CarOLXApiResponse {
   current_page?: number;
 }
 
-function resolveParamValue(raw: any): string | undefined {
-  if (raw === null || raw === undefined) return undefined;
-  if (typeof raw === 'string' || typeof raw === 'number') return String(raw);
-  // OLX often returns value as { key, label } or { key, label, value }
-  if (typeof raw === 'object') {
-    return raw.label ?? raw.value ?? raw.key ?? undefined;
-  }
-  return undefined;
-}
-
-function extractParam(params: any[], keys: string[]): string | undefined {
-  if (!Array.isArray(params)) return undefined;
-  for (const key of keys) {
-    const lowerKey = key.toLowerCase();
-    const found = params.find((p: any) =>
-      p.key === key ||
-      p.key === lowerKey ||
-      p.name === key ||
-      (p.name && p.name.toLowerCase() === lowerKey) ||
-      (p.label && p.label.toLowerCase().includes(lowerKey))
-    );
-    if (found) {
-      const resolved = resolveParamValue(found.value) ?? resolveParamValue(found.normalized_value) ?? resolveParamValue(found.label_value);
-      if (resolved !== undefined) return resolved;
-    }
-  }
-  return undefined;
+function findSpecialLabel(labels: any[], name: string): string | undefined {
+  if (!Array.isArray(labels)) return undefined;
+  const found = labels.find((l: any) => l.label === name);
+  if (!found || found.value === null || found.value === undefined) return undefined;
+  return String(found.value);
 }
 
 export class CarOLXService {
@@ -72,6 +50,40 @@ export class CarOLXService {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
     return headers;
+  }
+
+  async fetchCarListing(id: string): Promise<Partial<CarOLXListing>> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/listings/${id}`, {
+        headers: this.getAuthHeaders(),
+      });
+      const item = response.data;
+
+      const attrs: any[] = item.attributes || [];
+      const findAttr = (code: string) => attrs.find((a: any) => a.attr_code === code)?.value;
+
+      const year = findAttr('godiste');
+      const mileage = findAttr('kilometra-a'); // ž is encoded as -a in attr_code
+      const fuelType = findAttr('gorivo');
+      const transmission = findAttr('transmisija');
+      const engineSize = findAttr('kubikaza');
+      const power = findAttr('kilovata-kw');
+      const location = item.cities?.[0]?.name ?? undefined;
+
+      return {
+        viewCount: typeof item.views === 'number' ? item.views : undefined,
+        year: typeof year === 'number' && year > 1900 ? year : undefined,
+        mileage: typeof mileage === 'number' ? mileage : undefined,
+        fuelType: typeof fuelType === 'string' ? fuelType : undefined,
+        transmission: typeof transmission === 'string' ? transmission : undefined,
+        engineSize: typeof engineSize === 'number' ? engineSize : undefined,
+        power: typeof power === 'number' ? power : undefined,
+        location,
+      };
+    } catch (error: any) {
+      logger.error(`[CarOLX] Error fetching listing ${id}:`, error.message);
+      return {};
+    }
   }
 
   async fetchCarListings(page: number = 0, limit: number = 50): Promise<CarOLXApiResponse> {
@@ -97,63 +109,35 @@ export class CarOLXService {
       const rawListings = response.data.data || [];
       const meta = response.data.meta || {};
 
-      // Log raw params of first listing once to help debug extraction
-      if (rawListings.length > 0 && page === 0) {
-        const sample = rawListings[0];
-        logger.info('[CarOLX] Sample raw params:', JSON.stringify(sample.params || sample.attrs || []));
-        logger.info('[CarOLX] Sample raw location:', JSON.stringify(sample.location));
-      }
-
       const listings: CarOLXListing[] = rawListings.map((item: any) => {
         const listingId = String(item.id || '');
-
-        let locationString: string | undefined;
-        if (item.location && typeof item.location === 'object') {
-          // Try nested city object first (most common OLX structure)
-          const cityName = item.location.city?.name ?? item.location.city_name ?? item.location.cityName;
-          const regionName = item.location.region?.name ?? item.location.region_name;
-          if (cityName) {
-            locationString = regionName ? `${cityName}, ${regionName}` : cityName;
-          } else if (item.location.lat && item.location.lon) {
-            locationString = `${item.location.lat.toFixed(6)},${item.location.lon.toFixed(6)}`;
-          }
-        }
-
         const listingUrl = item.url || `https://olx.ba/artikal/${listingId}`;
 
-        // Try to extract mileage and year from item params/attrs
-        const paramSources = item.params || item.attrs || item.attr_values || [];
-        const mileageRaw = extractParam(paramSources, ['mileage', 'kilometraza', 'km', 'Kilometraža', 'prijeđeni kilometri']);
-        const yearRaw = extractParam(paramSources, ['model_year', 'godiste', 'year', 'Godište', 'godina', 'godina_proizvodnje']);
+        // OLX search API returns structured car data in special_labels
+        // e.g. [{ label: 'Gorivo', value: 'dizel' }, { label: 'Kilometraža', value: '243.228' }, { label: 'Godište', value: 2010 }]
+        const specialLabels: any[] = item.special_labels || [];
+        const fuelType = findSpecialLabel(specialLabels, 'Gorivo');
+        const mileageStr = findSpecialLabel(specialLabels, 'Kilometraža');
+        const yearStr = findSpecialLabel(specialLabels, 'Godište');
 
-        const mileage = mileageRaw ? parseInt(String(mileageRaw).replace(/\D/g, ''), 10) || undefined : undefined;
-        const year = yearRaw ? parseInt(String(yearRaw).replace(/\D/g, ''), 10) || undefined : undefined;
-
-        const fuelTypeRaw = extractParam(paramSources, ['fuel_type', 'fuel', 'gorivo', 'Gorivo', 'vrsta_goriva', 'tip_goriva']);
-        const engineSizeRaw = extractParam(paramSources, ['enginesize', 'engine_volume', 'kubikaza', 'Kubikaža', 'engine_size', 'zapremina', 'cm3', 'ccm']);
-        const transmissionRaw = extractParam(paramSources, ['gearbox', 'transmission', 'mjenjac', 'Transmisija', 'vrsta_mjenjaca']);
-        const powerRaw = extractParam(paramSources, ['engine_power', 'power', 'snaga', 'Snaga motora (KW)', 'kw', 'konjske_snage', 'ks']);
-
-        const viewCount: number | undefined =
-          typeof item.stats?.views === 'number' ? item.stats.views :
-          typeof item.view_count === 'number' ? item.view_count :
-          typeof item.views === 'number' ? item.views :
+        // labels[1] is raw mileage integer (no formatting), prefer it over parsing the string
+        const mileageRaw: number | undefined =
+          Array.isArray(item.labels) && typeof item.labels[1] === 'number' ? item.labels[1] :
+          mileageStr ? parseInt(mileageStr.replace(/\D/g, ''), 10) || undefined :
           undefined;
+
+        const year = yearStr ? parseInt(yearStr.replace(/\D/g, ''), 10) || undefined : undefined;
 
         return {
           id: listingId,
           title: item.title || 'No title',
           price: item.price || item.discounted_price_float || 0,
           url: listingUrl,
-          location: locationString,
+          location: undefined, // not returned by OLX search API
           images: item.images || [],
-          mileage: mileage && !isNaN(mileage) ? mileage : undefined,
+          mileage: mileageRaw && !isNaN(mileageRaw) ? mileageRaw : undefined,
           year: year && !isNaN(year) && year > 1900 ? year : undefined,
-          viewCount,
-          fuelType: fuelTypeRaw ?? undefined,
-          engineSize: engineSizeRaw ?? undefined,
-          transmission: transmissionRaw ?? undefined,
-          power: powerRaw ?? undefined,
+          fuelType: fuelType ?? undefined,
         };
       });
 

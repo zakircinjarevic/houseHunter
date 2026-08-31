@@ -65,11 +65,10 @@ export class CarTelegramService {
     if (listing.year !== undefined) parts.push(`📅 ${listing.year}`);
     if (listing.mileage !== undefined) parts.push(`🛣️ ${listing.mileage.toLocaleString()} km`);
     if (listing.fuelType) parts.push(`⛽ ${esc(listing.fuelType)}`);
-    if (listing.engineSize) parts.push(`🔧 ${esc(listing.engineSize)}`);
-    if (listing.power) parts.push(`⚡ ${esc(listing.power)}`);
+    if (listing.engineSize !== undefined) parts.push(`🔧 ${listing.engineSize}L`);
+    if (listing.power !== undefined) parts.push(`⚡ ${listing.power} kW`);
     if (listing.transmission) parts.push(`🔄 ${esc(listing.transmission)}`);
     if (listing.location) parts.push(`📍 ${esc(listing.location)}`);
-    if (listing.viewCount !== undefined) parts.push(`👁️ ${listing.viewCount} pregleda`);
     parts.push('');
     parts.push(`<a href="${this.safeUrl(listing.url)}">Otvori oglas</a>`);
     return parts.join('\n');

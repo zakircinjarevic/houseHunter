@@ -13,7 +13,6 @@ export class CarSyncService {
 
   private shouldNotify(listing: CarOLXListing): boolean {
     if (listing.price <= MIN_PRICE) return false;
-    // Skip likely republications: ads with 20+ views were already circulating
     if (listing.viewCount !== undefined && listing.viewCount >= 20) return false;
     return true;
   }
@@ -84,8 +83,11 @@ export class CarSyncService {
         const existing = await prisma.carListing.findUnique({ where: { id: listing.id } });
 
         if (!existing) {
-          await this.upsertCarListing(listing);
-          if (this.shouldNotify(listing)) toNotify.push(listing);
+          // Fetch full listing details to get view count + enriched attributes
+          const detail = await carOlxService.fetchCarListing(listing.id);
+          const enriched: CarOLXListing = { ...listing, ...detail };
+          await this.upsertCarListing(enriched);
+          if (this.shouldNotify(enriched)) toNotify.push(enriched);
         } else {
           if (!existing.notifiedAt && this.shouldNotify(listing)) {
             toNotify.push(listing);
