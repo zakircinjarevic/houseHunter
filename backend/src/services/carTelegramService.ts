@@ -48,21 +48,30 @@ export class CarTelegramService {
     }
   }
 
+  private escHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  private safeUrl(url: string): string {
+    return /^https?:\/\/olx\.ba\//i.test(url) ? url : 'https://olx.ba';
+  }
+
   private formatCarAlert(listing: CarOLXListing): string {
+    const esc = this.escHtml.bind(this);
     const parts = ['🚗 NOV OGLAS AUTOMOBILA'];
     parts.push('');
-    parts.push(`<b>${listing.title}</b>`);
+    parts.push(`<b>${esc(listing.title)}</b>`);
     parts.push(`💰 ${listing.price.toLocaleString()} KM`);
     if (listing.year !== undefined) parts.push(`📅 ${listing.year}`);
     if (listing.mileage !== undefined) parts.push(`🛣️ ${listing.mileage.toLocaleString()} km`);
-    if (listing.fuelType) parts.push(`⛽ ${listing.fuelType}`);
-    if (listing.engineSize) parts.push(`🔧 ${listing.engineSize}`);
-    if (listing.power) parts.push(`⚡ ${listing.power}`);
-    if (listing.transmission) parts.push(`🔄 ${listing.transmission}`);
-    if (listing.location) parts.push(`📍 ${listing.location}`);
+    if (listing.fuelType) parts.push(`⛽ ${esc(listing.fuelType)}`);
+    if (listing.engineSize) parts.push(`🔧 ${esc(listing.engineSize)}`);
+    if (listing.power) parts.push(`⚡ ${esc(listing.power)}`);
+    if (listing.transmission) parts.push(`🔄 ${esc(listing.transmission)}`);
+    if (listing.location) parts.push(`📍 ${esc(listing.location)}`);
     if (listing.viewCount !== undefined) parts.push(`👁️ ${listing.viewCount} pregleda`);
     parts.push('');
-    parts.push(`<a href="${listing.url}">Otvori oglas</a>`);
+    parts.push(`<a href="${this.safeUrl(listing.url)}">Otvori oglas</a>`);
     return parts.join('\n');
   }
 
@@ -75,7 +84,7 @@ export class CarTelegramService {
     if (existing?.notifiedAt) {
       // Check for price drop
       if (existing.priceAtNotification && listing.price < existing.priceAtNotification) {
-        const message = `📉 SMANJENA CIJENA - ${listing.title}\nSa ${existing.priceAtNotification.toLocaleString()} na ${listing.price.toLocaleString()} KM\n\n<a href="${listing.url}">${listing.url}</a>`;
+        const message = `📉 SMANJENA CIJENA - ${this.escHtml(listing.title)}\nSa ${existing.priceAtNotification.toLocaleString()} na ${listing.price.toLocaleString()} KM\n\n<a href="${this.safeUrl(listing.url)}">Otvori oglas</a>`;
         await this.broadcastToAll(message);
         await prisma.carListing.update({
           where: { id: listing.id },
