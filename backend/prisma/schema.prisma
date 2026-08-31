@@ -54,6 +54,7 @@ model CarListing {
   images              String
   mileage             Int?
   year                Int?
+  viewCount           Int?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   lastSeen            DateTime  @default(now())

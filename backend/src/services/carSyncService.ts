@@ -83,18 +83,43 @@ export class CarSyncService {
         const existing = await prisma.carListing.findUnique({ where: { id: listing.id } });
 
         if (!existing) {
-          // Fetch full listing details to get view count + enriched attributes
+          // Fetch individual listing to get view count + full attributes
           const detail = await carOlxService.fetchCarListing(listing.id);
           const enriched: CarOLXListing = { ...listing, ...detail };
           await this.upsertCarListing(enriched);
-          if (this.shouldNotify(enriched)) toNotify.push(enriched);
-        } else {
-          if (!existing.notifiedAt && this.shouldNotify(listing)) {
-            toNotify.push(listing);
-          } else if (existing.priceAtNotification && listing.price < existing.priceAtNotification) {
-            toNotify.push(listing);
+          if (this.shouldNotify(enriched)) {
+            toNotify.push(enriched);
+          } else if (enriched.viewCount !== undefined && enriched.viewCount >= 20) {
+            // High view count = old/republished listing — seal so it's never reconsidered
+            await prisma.carListing.update({ where: { id: enriched.id }, data: { notifiedAt: new Date() } });
           }
-          await this.upsertCarListing(listing);
+        } else {
+          if (!existing.notifiedAt && listing.price > MIN_PRICE) {
+            // Use stored view count if available, otherwise fetch detail
+            const storedViewCount = existing.viewCount ?? undefined;
+            let viewCount = storedViewCount;
+            let candidateListing: CarOLXListing = listing;
+
+            if (viewCount === undefined) {
+              const detail = await carOlxService.fetchCarListing(listing.id);
+              viewCount = detail.viewCount;
+              candidateListing = { ...listing, ...detail };
+              await this.upsertCarListing(candidateListing);
+            } else {
+              await this.upsertCarListing(listing);
+            }
+
+            if (viewCount !== undefined && viewCount >= 20) {
+              await prisma.carListing.update({ where: { id: listing.id }, data: { notifiedAt: new Date() } });
+            } else {
+              toNotify.push(candidateListing);
+            }
+          } else {
+            if (existing.priceAtNotification && listing.price < existing.priceAtNotification) {
+              toNotify.push(listing);
+            }
+            await this.upsertCarListing(listing);
+          }
         }
       }
 
@@ -152,29 +177,21 @@ export class CarSyncService {
   }
 
   private async upsertCarListing(listing: CarOLXListing): Promise<void> {
+    const fields = {
+      title: listing.title,
+      price: listing.price,
+      url: listing.url,
+      location: listing.location ?? null,
+      images: JSON.stringify(listing.images || []),
+      mileage: listing.mileage ?? null,
+      year: listing.year ?? null,
+      viewCount: listing.viewCount ?? null,
+      lastSeen: new Date(),
+    };
     await prisma.carListing.upsert({
       where: { id: listing.id },
-      create: {
-        id: listing.id,
-        title: listing.title,
-        price: listing.price,
-        url: listing.url,
-        location: listing.location ?? null,
-        images: JSON.stringify(listing.images || []),
-        mileage: listing.mileage ?? null,
-        year: listing.year ?? null,
-        lastSeen: new Date(),
-      },
-      update: {
-        title: listing.title,
-        price: listing.price,
-        url: listing.url,
-        location: listing.location ?? null,
-        images: JSON.stringify(listing.images || []),
-        mileage: listing.mileage ?? null,
-        year: listing.year ?? null,
-        lastSeen: new Date(),
-      },
+      create: { id: listing.id, ...fields },
+      update: fields,
     });
   }
 

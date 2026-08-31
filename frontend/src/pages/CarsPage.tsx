@@ -9,6 +9,7 @@ interface CarListing {
   images: string[];
   mileage?: number;
   year?: number;
+  viewCount?: number;
   createdAt: string;
 }
 
@@ -103,14 +104,19 @@ export default function CarsPage() {
                     {formatPrice(listing.price)}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-2">
+                    {listing.year != null && (
+                      <span className="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                        📅 {listing.year}
+                      </span>
+                    )}
                     {listing.mileage != null && (
                       <span className="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
                         🛣️ {listing.mileage.toLocaleString()} km
                       </span>
                     )}
-                    {listing.year != null && (
+                    {listing.viewCount != null && (
                       <span className="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                        📅 {listing.year}
+                        👁️ {listing.viewCount.toLocaleString()}
                       </span>
                     )}
                   </div>
