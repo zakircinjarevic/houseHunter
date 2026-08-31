@@ -12,7 +12,10 @@ export class CarSyncService {
   private notificationEnabled: boolean = false;
 
   private shouldNotify(listing: CarOLXListing): boolean {
-    return listing.price > MIN_PRICE;
+    if (listing.price <= MIN_PRICE) return false;
+    // Skip likely republications: ads with 20+ views were already circulating
+    if (listing.viewCount !== undefined && listing.viewCount >= 20) return false;
+    return true;
   }
 
   async initialCarBackfill(): Promise<void> {

@@ -53,11 +53,16 @@ export class CarTelegramService {
     parts.push('');
     parts.push(`<b>${listing.title}</b>`);
     parts.push(`💰 ${listing.price.toLocaleString()} KM`);
-    if (listing.mileage !== undefined) parts.push(`🛣️ ${listing.mileage.toLocaleString()} km`);
     if (listing.year !== undefined) parts.push(`📅 ${listing.year}`);
+    if (listing.mileage !== undefined) parts.push(`🛣️ ${listing.mileage.toLocaleString()} km`);
+    if (listing.fuelType) parts.push(`⛽ ${listing.fuelType}`);
+    if (listing.engineSize) parts.push(`🔧 ${listing.engineSize}`);
+    if (listing.power) parts.push(`⚡ ${listing.power}`);
+    if (listing.transmission) parts.push(`🔄 ${listing.transmission}`);
     if (listing.location) parts.push(`📍 ${listing.location}`);
+    if (listing.viewCount !== undefined) parts.push(`👁️ ${listing.viewCount} pregleda`);
     parts.push('');
-    parts.push(`<a href="${listing.url}">${listing.url}</a>`);
+    parts.push(`<a href="${listing.url}">Otvori oglas</a>`);
     return parts.join('\n');
   }
 
